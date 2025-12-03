@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'extras_reserva.dart'; // <- ahora vamos a la pantalla de extras
+import 'extras_reserva.dart'; // 👈 IMPORTA la pantalla de extras, no la de confirmación
 
 class ReservaAreaPage extends StatefulWidget {
   final String areaName;   // Ej: "Piscina"
@@ -19,7 +19,6 @@ class ReservaAreaPage extends StatefulWidget {
 class _ReservaAreaPageState extends State<ReservaAreaPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  String? _selectedTimeSlot;
 
   final List<String> _horariosDisponibles = [
     "7:00 am a 8:00 am",
@@ -31,14 +30,20 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
     "NO DISPONIBLE",
   ];
 
-  // Precio base según el área
-  int get _basePrice {
-    final name = widget.areaName.toLowerCase();
-    if (name.contains('piscina')) return 100;
-    if (name.contains('tenis')) return 150;
-    if (name.contains('gimnasio')) return 80;
-    if (name.contains('fronton') || name.contains('frontón')) return 120;
-    return 100; // default
+  // 👇 Precio base según el área
+  int _basePrice() {
+    switch (widget.areaName.toUpperCase()) {
+      case 'PISCINA':
+        return 100;
+      case 'CANCHA DE TENIS':
+        return 120;
+      case 'GIMNASIO':
+        return 80;
+      case 'FRONTON':
+        return 90;
+      default:
+        return 100;
+    }
   }
 
   void _onTimeSelected(String time) {
@@ -49,10 +54,7 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
       return;
     }
 
-    setState(() {
-      _selectedTimeSlot = time;
-    });
-
+    // 👇 AHORA VAMOS A LA PANTALLA DE EXTRAS, NO A CONFIRMAR DIRECTO
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -61,7 +63,7 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
           userName: widget.userName,
           date: _selectedDay!,
           timeSlot: time,
-          basePrice: _basePrice, // <- se manda el precio base
+          basePrice: _basePrice(),
         ),
       ),
     );
@@ -72,7 +74,7 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView( // 👈 scroll para que no haga overflow
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +97,10 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
                     const SizedBox(height: 4),
                     Text(
                       widget.userName,
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -129,8 +134,7 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
               const SizedBox(height: 12),
 
               // Calendario
-              Container
-              (
+              Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
                 ),
@@ -139,8 +143,7 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                   focusedDay: _focusedDay,
                   calendarFormat: CalendarFormat.month,
-                  selectedDayPredicate: (day) =>
-                      isSameDay(_selectedDay, day),
+                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
                       _selectedDay = selectedDay;
@@ -206,6 +209,8 @@ class _ReservaAreaPageState extends State<ReservaAreaPage> {
                   ),
                 ],
               ),
+
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -239,6 +244,7 @@ class _HorarioButton extends StatelessWidget {
         child: Text(
           text,
           style: const TextStyle(color: Colors.white, fontSize: 14),
+          textAlign: TextAlign.center,
         ),
       ),
     );
