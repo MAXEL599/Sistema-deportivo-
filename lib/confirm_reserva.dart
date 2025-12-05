@@ -13,7 +13,7 @@ class ConfirmReservaPage extends StatefulWidget {
   final int extrasTotal;    // Total extras
 
   /// ID del nodo en Realtime Database (pushId).
-  /// Ruta esperada: usuarios/{uid}/reservas/reservas_detalle/{reservaId}
+  /// Ruta usada: usuarios/{uid}/reservas_detalle/{reservaId}
   final String? reservaId;
 
   const ConfirmReservaPage({
@@ -24,7 +24,7 @@ class ConfirmReservaPage extends StatefulWidget {
     required this.timeSlot,
     required this.basePrice,
     required this.extrasTotal,
-    this.reservaId, // 👈 pásalo desde ExtrasReservaPage cuando guardes en Firebase
+    this.reservaId,
   });
 
   @override
@@ -57,11 +57,12 @@ class _ConfirmReservaPageState extends State<ConfirmReservaPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || widget.reservaId == null) return null;
 
+    // 🔴 MISMA RUTA QUE LA LISTA:
+    // usuarios/{uid}/reservas_detalle/{reservaId}
     return FirebaseDatabase.instance
         .ref()
         .child('usuarios')
         .child(user.uid)
-        .child('reservas')
         .child('reservas_detalle')
         .child(widget.reservaId!);
   }
@@ -69,7 +70,6 @@ class _ConfirmReservaPageState extends State<ConfirmReservaPage> {
   Future<void> _setEstado(String nuevoEstado) async {
     final ref = _reservaRefForCurrentUser();
     if (ref == null) {
-      // Si no tenemos id o user, solo volvemos al home.
       _goHome();
       return;
     }
@@ -466,3 +466,4 @@ class _ConfirmReservaPageState extends State<ConfirmReservaPage> {
     );
   }
 }
+
