@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-// importa tus pantallas
+// Firebase options generado por FlutterFire CLI
+import 'firebase_options.dart';
+
+// Pantallas principales
 import 'login.dart';
 import 'register.dart';
 import 'home.dart';
+import 'perfil.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
@@ -22,14 +33,14 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
 
-      // Ruta inicial
       initialRoute: '/login',
 
-      // Rutas nombradas principales
       routes: {
         '/login': (context) => const LoginPageVIP(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePageVIP(),
+        // 👇 ahora PerfilPage ya no lleva parámetros
+        '/perfil': (context) => const PerfilPage(),
       },
     );
   }

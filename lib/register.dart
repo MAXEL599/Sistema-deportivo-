@@ -1,7 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
+
+  bool _loading = false;
+
+  Future<void> _register() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final pass = _passwordController.text.trim();
+    final confirm = _confirmController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || pass.isEmpty || confirm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Completa todos los campos")),
+      );
+      return;
+    }
+
+    if (pass != confirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Las contraseñas no coinciden")),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: pass,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      String msg = "Error al registrarse";
+
+      if (e.code == 'email-already-in-use') {
+        msg = "Este correo ya está registrado";
+      } else if (e.code == 'invalid-email') {
+        msg = "Correo inválido";
+      } else if (e.code == 'weak-password') {
+        msg = "La contraseña es muy débil";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +74,7 @@ class RegisterPage extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // gris muy claro
+      backgroundColor: const Color(0xFFF5F7FA),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -50,6 +113,7 @@ class RegisterPage extends StatelessWidget {
 
                   // Nombre
                   TextField(
+                    controller: _nameController,
                     decoration: InputDecoration(
                       hintText: "Nombre",
                       filled: true,
@@ -63,6 +127,7 @@ class RegisterPage extends StatelessWidget {
 
                   // Correo
                   TextField(
+                    controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: "Correo electrónico",
@@ -77,6 +142,7 @@ class RegisterPage extends StatelessWidget {
 
                   // Contraseña
                   TextField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: "Contraseña",
@@ -91,6 +157,7 @@ class RegisterPage extends StatelessWidget {
 
                   // Confirmar contraseña
                   TextField(
+                    controller: _confirmController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: "Confirmar contraseña",
@@ -112,13 +179,13 @@ class RegisterPage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF3E4650),
                       ),
-                      onPressed: () {
-                        // aquí luego meteremos la lógica de registro
-                      },
-                      child: const Text(
-                        "Registrarse",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      onPressed: _loading ? null : _register,
+                      child: _loading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Registrarse",
+                              style: TextStyle(color: Colors.white),
+                            ),
                     ),
                   ),
 

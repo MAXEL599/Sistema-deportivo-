@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "856834623310",
+    "firebase_url": "https://pruebas1-f9658-default-rtdb.firebaseio.com",
+    "project_id": "pruebas1-f9658",
+    "storage_bucket": "pruebas1-f9658.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856834623310:android:99c81c5fa3aa482d6a401f",
+        "android_client_info": {
+          "package_name": "com.example.centro_vip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYb61vJ60stNklu0hTvbJqiRxq1JwCVh0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

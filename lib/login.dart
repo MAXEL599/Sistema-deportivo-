@@ -1,7 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginPageVIP extends StatelessWidget {
+class LoginPageVIP extends StatefulWidget {
   const LoginPageVIP({super.key});
+
+  @override
+  State<LoginPageVIP> createState() => _LoginPageVIPState();
+}
+
+class _LoginPageVIPState extends State<LoginPageVIP> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _loading = false;
+
+  Future<void> _login() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Completa todos los campos")),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      String msg = "Error al iniciar sesión";
+
+      if (e.code == "user-not-found") msg = "El usuario no existe";
+      if (e.code == "wrong-password") msg = "Contraseña incorrecta";
+      if (e.code == "invalid-email") msg = "Correo inválido";
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +59,6 @@ class LoginPageVIP extends StatelessWidget {
           children: [
             const SizedBox(height: 70),
 
-            // Título superior (sin imagen)
             const Text(
               "Club privado de deportes",
               textAlign: TextAlign.center,
@@ -40,6 +84,8 @@ class LoginPageVIP extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 filled: true,
                 fillColor: Color(0xFFF4F5F7),
@@ -64,6 +110,7 @@ class LoginPageVIP extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             TextField(
+              controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
                 filled: true,
@@ -76,7 +123,6 @@ class LoginPageVIP extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // LINKS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -85,9 +131,8 @@ class LoginPageVIP extends StatelessWidget {
                   style: TextStyle(color: Color(0xFF2860D0), fontSize: 12),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/register');
-                  },
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/register'),
                   child: const Text(
                     "registrarse",
                     style: TextStyle(
@@ -110,13 +155,13 @@ class LoginPageVIP extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3E4650),
                 ),
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-                child: const Text(
-                  "LOG IN",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
+                onPressed: _loading ? null : _login,
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "LOG IN",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
               ),
             ),
 
@@ -135,19 +180,20 @@ class LoginPageVIP extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // BOTONES SOCIALES
             _SocialButton(
               text: "LOGIN WITH FACEBOOK",
               color: const Color(0xFF3A3F47),
               icon: Icons.facebook,
             ),
             const SizedBox(height: 12),
+
             _SocialButton(
               text: "LOGIN WITH TWITTER",
               color: const Color(0xFF6F7A88),
               icon: Icons.alternate_email,
             ),
             const SizedBox(height: 12),
+
             _SocialButton(
               text: "LOGIN WITH GOOGLE",
               color: const Color(0xFFD1D6DE),
@@ -195,10 +241,8 @@ class _SocialButton extends StatelessWidget {
           children: [
             Icon(icon, color: textColor),
             const SizedBox(width: 10),
-            Text(
-              text,
-              style: TextStyle(color: textColor, fontSize: 15),
-            ),
+            Text(text,
+                style: TextStyle(color: textColor, fontSize: 15)),
           ],
         ),
       ),
